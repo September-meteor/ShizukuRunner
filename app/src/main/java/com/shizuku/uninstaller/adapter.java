@@ -162,7 +162,14 @@ public class adapter extends BaseAdapter {
             public void onClick(View view) {
 
                 //这里会根据用户是否勾选了降权，来执行不同的命令
-                mContext.startActivity(new Intent(mContext, Exec.class).putExtra("content", b.getBoolean("shell", false) ? "whoami|grep root &> /dev/null && echo '提示:已将root降权至shell' 1>&2;" + mContext.getApplicationInfo().nativeLibraryDir + "/libchid.so 2000 " + b.getString("content", " ") + " || " + b.getString("content", " ") : b.getString("content", " ")));
+                //Fix: 改用 'su shell -c "command"' 实现降权
+                mContext.startActivity(new Intent(mContext, Exec.class).putExtra("content", 
+                    b.getBoolean("shell", false) 
+                        ? "whoami|grep root &> /dev/null && { echo '提示:已将root降权至shell' 1>&2; su shell -c '" 
+                          + b.getString("content", " ").replace("'", "'\\''") 
+                          + "'; } || " + b.getString("content", " ")
+                        : b.getString("content", " ")
+                ));
             }
         } : voc);
         holder.texta.setText(existn ? "空" : b.getString("name", "空"));
