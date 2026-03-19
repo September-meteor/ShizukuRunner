@@ -4,6 +4,8 @@ If your main language is not Chinese, check out [Read the full English version](
 
 ## 一、声明
 
+![icon](app/src/main/res/drawable/icon.png)
+
 - 本项目为[WuDi-ZhanShen/ShizukuRunner](https://github.com/WuDi-ZhanShen/ShizukuRunner)的非官方衍生版本。
 - **由于上游项目未提供 LICENSE 文件，本项目仅供学习交流使用，严禁用于商业用途。**
 - 本仓库的核心业务代码版权归原作者 [WuDi-ZhanShen](https://github.com/WuDi-ZhanShen) 所有，本人（September-meteor）仅对本文档第二部分所提到的内容做出了修改。
@@ -114,7 +116,7 @@ source ~/.bashrc
 # 接受许可证
 yes | sdkmanager --licenses
 # 安装平台工具（包含 adb 等）和编译工具
-sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+sdkmanager "platform-tools" "platforms;android-32" "build-tools;32.0.0"
 
 # 创建 local.properties 文件
 cd ~/ShizukuRunner
@@ -151,6 +153,10 @@ cp app/build/outputs/apk/debug/app-debug.apk /sdcard/Download/ShizukuRunner.apk
   - “不在后台显示”，默认勾选。勾选它时，ShizukuRunner 将不会出现在你的后台中，如果你离开前台，它就会消失，下次你将需要重新点击应用图标打开它。
   - “开启50格命令栏”，默认不勾选。勾选它时，你会发现原来的命令输入框从原来的十个变成了数十个，同时增加了屏幕占用面积。
   - 点击空白处你将会退出设置，但是你可以长按主页上的小猫图标来再次唤出使用帮助界面。
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0b97c0c3-3243-47fc-a7c1-c24337737766" width="48">
+</p>
 
 4. 点击 ShizukuRunner 界面上的“空/空”输入框或是灰色加号：
   - 在弹出的弹窗内，第一个输入框输入你想命名的名称（可不填）。
