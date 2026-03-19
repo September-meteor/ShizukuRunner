@@ -41,10 +41,27 @@ public class Exec extends Activity {
         }
 
         @Override
+        // Fix：加了  activity == null || activity.t2 == null  检查（防崩溃）；处理了  msg.obj  为  null  的情况；错误消息统一标红
         public void handleMessage(Message msg) {
-
-            //msg.what 是1就是错误信息，是2是正常信息
-            mOuter.get().t2.append(msg.what == 1 ? (SpannableString)msg.obj : String.valueOf(msg.obj));
+         Exec activity = mOuter.get();
+          if (activity == null || activity.t2 == null) return;
+    
+          CharSequence text;
+          if (msg.what == 1) {
+                // 错误消息：红色 SpannableString
+                if (msg.obj instanceof SpannableString) {
+                   text = (SpannableString) msg.obj;
+             } else {
+                   String str = msg.obj != null ? msg.obj.toString() : "null";
+                  SpannableString ss = new SpannableString(str);
+                  ss.setSpan(new ForegroundColorSpan(Color.RED), 0, ss.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                   text = ss;
+                }
+            } else {
+             // 普通消息
+             text = msg.obj != null ? String.valueOf(msg.obj) : "";
+           }
+         activity.t2.append(text);
         }
     }
 
