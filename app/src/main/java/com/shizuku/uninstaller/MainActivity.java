@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import rikka.shizuku.Shizuku;
 
+@SuppressWarnings("deprecation")
 public class MainActivity extends Activity {
 
     boolean b, c;
