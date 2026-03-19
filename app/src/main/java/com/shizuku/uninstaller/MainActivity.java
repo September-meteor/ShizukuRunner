@@ -190,66 +190,72 @@ public class MainActivity extends Activity {
 
     public void ex(View view) {
         //单击猫猫头像的点击事件，让list变不可见，让EditText可见。
+        boolean entering = d.getVisibility() == View.VISIBLE; // 当前列表可见 → 正要进入执行模式
+        flipAnimation(view, entering); // 根据方向执行动画
 
-        flipAnimation(view);
-        d.setVisibility(View.INVISIBLE);
-        e.setVisibility(View.INVISIBLE);
-        d.setAdapter(new adapter(this, new int[]{}));
-        e.setAdapter(new adapter(this, new int[]{}));
-        findViewById(R.id.l1).setVisibility(View.VISIBLE);
-        e1 = findViewById(R.id.e);
-        e1.setEnabled(true);
-        e1.requestFocus();
-        e1.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(e1, 0);
-            }
-        }, 200);
-        e1.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    exe(v);
+        if (entering) {
+            // 进入执行模式（隐藏列表，显示输入框）
+            d.setVisibility(View.INVISIBLE);
+            e.setVisibility(View.INVISIBLE);
+            d.setAdapter(new adapter(this, new int[]{}));
+            e.setAdapter(new adapter(this, new int[]{}));
+            findViewById(R.id.l1).setVisibility(View.VISIBLE);
+            e1 = findViewById(R.id.e);
+            e1.setEnabled(true);
+            e1.requestFocus();
+            e1.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(e1, 0);
                 }
-                return false;
-            }
-        });
-        e1.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN)
-                    exe(view);
-                return false;
-            }
-        });
+            }, 200);
+            e1.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        exe(v);
+                    }
+                    return false;
+                }
+            });
+            e1.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                    if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN)
+                        exe(view);
+                    return false;
+                }
+            });
+        } else {
+            // 返回主界面（显示列表，隐藏输入框）
+            d.setVisibility(View.VISIBLE);
+            e.setVisibility(View.VISIBLE);
+            e1.setEnabled(false);
+            initlist();
+            findViewById(R.id.l1).setVisibility(View.GONE);
+        }
 
+        // 重置点击监听，保证下次点击仍然进入此方法
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                flipAnimation(view);
-                d.setVisibility(View.VISIBLE);
-                e.setVisibility(View.VISIBLE);
-                e1.setEnabled(false);
-                initlist();
-                findViewById(R.id.l1).setVisibility(View.GONE);
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        ex(view);
-                    }
-                });
+                ex(view);
             }
         });
     }
 
 
-    private void flipAnimation(View view) {
-        //flipAnimation是一个轻量级的翻转动画，很有趣哦
-        ObjectAnimator a2 = ObjectAnimator.ofFloat(view, "rotationY", 90f, 0f);
+    private void flipAnimation(View view, boolean enter) {
+    //flipAnimation是一个轻量级的翻转动画，很有趣哦
+    //Fix: 增加了返回动画
+        ObjectAnimator a2;
+        if (enter) {
+            a2 = ObjectAnimator.ofFloat(view, "rotationY", 0f, 180f); // 进入：0° → 180°（左右镜像）
+        } else {
+            a2 = ObjectAnimator.ofFloat(view, "rotationY", 180f, 0f); // 返回：180° → 0°
+        }
         a2.setDuration(300).setInterpolator(new LinearInterpolator());
         a2.start();
-
     }
 
 
