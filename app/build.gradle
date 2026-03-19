@@ -3,24 +3,22 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('D:\\ginkgo\\文件备份\\key.keystore')
-            storePassword 'wewewe'
-            keyPassword 'wewewe'
-            keyAlias 'key0'
-        }
-    }
-    compileSdk 32
-
+    // 不要signingConfigs，用默认debug签名
+    
+    compileSdkVersion 32  // 改成Groovy DSL语法
+    buildToolsVersion "32.0.0"  // 可选，B版加的
+    
     defaultConfig {
         applicationId "com.shizuku.uninstaller"
-        minSdk 23
-        targetSdk 32
-        versionCode 13
+        minSdkVersion 23
+        targetSdkVersion 32
+        versionCode 13  // 保持A原版版本号
         versionName "13"
-
+        
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // NDK配置（可选，如果你需要）
+        // ndkVersion "24.0.8215888"
     }
 
     buildTypes {
@@ -28,7 +26,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+        }
     }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
