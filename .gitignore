@@ -1,0 +1,16 @@
+# 构建输出
+/build
+/app/build
+.gradle/
+*.apk
+*.dex
+*.class
+
+# IDE 文件
+.idea/
+*.iml
+local.properties
+
+# 其他临时文件
+.cxx/
+.DS_Store
