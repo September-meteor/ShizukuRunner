@@ -20,7 +20,7 @@
             android:id="@+id/iv"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:background="@string/cat"
+            android:background="@drawable/cat"
             android:onClick="ex" />
 
         <Button
