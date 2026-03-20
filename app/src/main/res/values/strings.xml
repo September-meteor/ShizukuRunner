@@ -1,3 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ShizukuRunner</string>
+    <string name="help_title">使用帮助</string>
+    <string name="button_ok">OK</string>
+    <string name="button_settings">设置</string>
+    <string name="shizuku_running">Shizuku\n已运行</string>
+    <string name="shizuku_not_running">Shizuku\n未运行</string>
+    <string name="shizuku_granted">Shizuku\n已授权</string>
+    <string name="shizuku_not_granted">Shizuku\n未授权</string>
+    <string name="hint_command">输入要执行的命令</string>
+    <string name="command_title">命令标题</string>
+    <string name="command_content">命令内容</string>
+    <string name="name_hint">起个名字吧</string>
+    <string name="command_hint">如：ls -l</string>
+    <string name="drop_root_to_shell">将root权限降至shell</string>
+    <string name="hide_from_recents">不在后台显示</string>
+    <string name="enable_50_commands">开启50格命令栏</string>
+    <string name="language_switch">English</string>
+    <string name="restart_toast">重启APP后生效</string>
+    <string name="copied_to_clipboard">已复制该条命令至剪贴板:\n</string>
+    <string name="empty">空</string>
+    <string name="exec_title_running">执行中</string>
+    <string name="exec_title_finished">执行完毕</string>
+    <string name="return_value_format" formatted="false">返回值：%s\n执行用时：%.2f秒</string>
+    <string name="shizuku_not_running_toast">Shizuku未运行</string>
+    <string name="help_text_part1"><![CDATA[&#160;&#160;本应用<u><b><big>不会</big></b></u>收集您的任何信息，且完全不包含任何联网功能。继续使用则代表您同意上述隐私政策。<br/>&#160;&#160;使用本应用需要您的设备已安装并激活Shizuku。<br/>&#160;&#160;在后续的使用中，您可以<u><b><big>长按</big></b></u>主界面标题上的猫猫图案(如下图所示)来打开此帮助界面。]]></string>
+    <string name="help_text_part2"><![CDATA[&#160;&#160;--点击编辑某个栏目；长按复制该栏目中保存的命令。<br/><br/>&#160;&#160;--<u><b><big>单击</big></b></u>标题上的猫猫图案来切换APP为一次性运行命令的模式。<br/><br/>&#160;&#160;--点击主界面标题上的两个显示Shizuku状态的按钮中的任意一个，均可<u><b><big>刷新Shiuzku状态</big></b></u>。当然，关闭再打开本APP也是不错的刷新方法。<br/><br/>&#160;&#160;--如果您设备上的Shizuku服务是由root权限启动的，那么本APP在执行命令时也将具有root权限。假如您不希望<u><b><big>以如此高的权限执行命令</big></b></u>(大材小用)，您可以勾选命令编辑界面的“将root权限降至Shell”来让APP仅使用Shell权限执行命令。<br/><br/>&#160;&#160;--您可以点击本界面下方的设置按钮探索更多功能哦！]]></string>
+    <string name="drop_root_hint">提示:已将root降权至shell</string>
 </resources>

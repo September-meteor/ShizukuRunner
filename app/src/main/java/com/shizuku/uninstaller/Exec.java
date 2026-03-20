@@ -68,7 +68,7 @@ public class Exec extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("执行中");
+        setTitle(getString(R.string.exec_title_running));
 
         //根据系统深色模式动态改变深色主题
         if (((UiModeManager) getSystemService(Service.UI_MODE_SERVICE)).getNightMode() == UiModeManager.MODE_NIGHT_NO)
@@ -173,8 +173,8 @@ t2.requestFocus();
             t1.post(new Runnable() {
                 @Override
                 public void run() {
-                    t1.setText(String.format("返回值：%s\n执行用时：%.2f秒", exitValue, (System.currentTimeMillis() - time) / 1000f));
-                    setTitle("执行完毕");
+                    t1.setText(String.format(getString(R.string.return_value_format), exitValue, (System.currentTimeMillis() - time) / 1000f));
+                    setTitle(getString(R.string.exec_title_finished));
                 }
             });
         } catch (Exception ignored) {

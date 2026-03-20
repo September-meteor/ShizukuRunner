@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="命令标题"
+        android:text="@string/command_title"
         android:layout_gravity="center"
         >
 
@@ -20,14 +20,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:singleLine="true"
-        android:hint="起个名字吧"
+        android:hint="@string/name_hint"
         />
 
     <TextView
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="命令内容"
+        android:text="@string/command_content"
         >
 
     </TextView>
@@ -40,12 +40,12 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:background="@null"
-        android:hint="如：ls -l"/>
+        android:hint="@string/command_hint"/>
 
     <CheckBox
         android:layout_gravity="center"
         android:id="@+id/cb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="将root权限降至shell" />
+        android:text="@string/drop_root_to_shell" />
 </LinearLayout>
