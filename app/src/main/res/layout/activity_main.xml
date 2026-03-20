@@ -72,7 +72,7 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:imeOptions="actionDone"
-                android:hint="输入要执行的命令"
+                android:hint="@string/hint_command"
                 android:singleLine="true" />
 
             <ImageButton

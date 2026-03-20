@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShizukuRunner</string>
+    <string name="help_title">Help</string>
+    <string name="button_ok">OK</string>
+    <string name="button_settings">Settings</string>
+    <string name="shizuku_running">Shizuku\nRunning</string>
+    <string name="shizuku_not_running">Shizuku\nNot running</string>
+    <string name="shizuku_granted">Shizuku\nGranted</string>
+    <string name="shizuku_not_granted">Shizuku\nNot granted</string>
+    <string name="hint_command">Enter command</string>
+    <string name="command_title">Command Title</string>
+    <string name="command_content">Command Content</string>
+    <string name="name_hint">Give a name</string>
+    <string name="command_hint">e.g., ls -l</string>
+    <string name="drop_root_to_shell">Drop root to shell</string>
+    <string name="hide_from_recents">Hide from recents</string>
+    <string name="enable_50_commands">Enable 50 command slots</string>
+    <string name="language_switch">中文</string>
+    <string name="restart_toast">Restart app to take effect</string>
+    <string name="copied_to_clipboard">Copied command to clipboard:\n</string>
+    <string name="empty">Empty</string>
+    <string name="exec_title_running">Executing</string>
+    <string name="exec_title_finished">Finished</string>
+    <string name="return_value_format" formatted="false">Return value: %s\nTime: %.2fs</string>
+    <string name="shizuku_not_running_toast">Shizuku not running</string>
+    <string name="help_text_part1"><![CDATA[&#160;&#160;This app <u><b><big>does not</big></b></u> collect any of your information and contains no networking functions. Continuing to use means you agree to the above privacy policy.<br/>&#160;&#160;This app requires Shizuku installed and activated on your device.<br/>&#160;&#160;In later use, you can <u><b><big>long press</big></b></u> the cat icon on the main screen title (as shown below) to open this help screen.]]></string>
+    <string name="help_text_part2"><![CDATA[&#160;&#160;--Tap to edit an entry; long press to copy the saved command.<br/><br/>&#160;&#160;--<u><b><big>Single tap</big></b></u> the cat icon on the title to switch to one‑time command mode.<br/><br/>&#160;&#160;--Tap either of the two Shizuku status buttons on the main screen title to <u><b><big>refresh Shizuku status</big></b></u>. Closing and reopening the app also works.<br/><br/>&#160;&#160;--If Shizuku is started with root, this app will also run commands with root. If you prefer <u><b><big>not to use such high privilege</big></b></u>, you can check “Drop root to shell” in the command edit dialog to run commands with shell privileges only.<br/><br/>&#160;&#160;--Tap the Settings button at the bottom of this screen to explore more features!]]></string>
+    <string name="drop_root_hint">Hint: dropped root to shell</string>
+</resources>
