@@ -13,13 +13,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Html;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.view.animation.LayoutAnimationController;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
@@ -32,6 +32,11 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.res.Resources;
+import android.content.res.Configuration;
+import android.view.animation.LayoutAnimationController;
+
+import java.util.Locale;
 
 import rikka.shizuku.Shizuku;
 
@@ -48,13 +53,31 @@ public class MainActivity extends Activity {
     //shizuku监听授权结果
     private final Shizuku.OnRequestPermissionResultListener RL = this::onRequestPermissionsResult;
 
-
     private void onRequestPermissionsResult(int i, int i1) {
         check();
     }
 
+    // 应用语言设置
+    private void applyLanguage() {
+        SharedPreferences prefs = getSharedPreferences("data", MODE_PRIVATE);
+        String lang = prefs.getString("language", "zh");
+        Locale locale;
+        if ("en".equals(lang)) {
+            locale = Locale.ENGLISH;
+        } else {
+            locale = Locale.CHINESE;
+        }
+        Resources res = getResources();
+        Configuration conf = res.getConfiguration();
+        conf.setLocale(locale);
+        res.updateConfiguration(conf, res.getDisplayMetrics());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 先应用语言设置
+        applyLanguage();
+
         super.onCreate(savedInstanceState);
         //根据系统深色模式自动切换软件的深色/亮色主题
         if (((UiModeManager) getSystemService(Service.UI_MODE_SERVICE)).getNightMode() == UiModeManager.MODE_NIGHT_NO)
@@ -73,7 +96,6 @@ public class MainActivity extends Activity {
         //限定一下横屏时的窗口宽度,让其不铺满屏幕。否则太丑
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             getWindow().getAttributes().width = (getWindowManager().getDefaultDisplay().getHeight());
-
 
         B = findViewById(R.id.b);
         C = findViewById(R.id.c);
@@ -106,13 +128,13 @@ public class MainActivity extends Activity {
     private void showHelp() {
         //展示帮助界面
         View v = LayoutInflater.from(MainActivity.this).inflate(R.layout.help, null);
-        ((TextView) v.findViewById(R.id.t3)).setText(Html.fromHtml("&nbsp;&nbsp;本应用<u><b><big>不会</big></b></u>收集您的任何信息，且完全不包含任何联网功能。继续使用则代表您同意上述隐私政策。<br>&nbsp;&nbsp;使用本应用需要您的设备已安装并激活Shizuku。<br>&nbsp;&nbsp;在后续的使用中，您可以<u><b><big>长按</big></b></u>主界面标题上的猫猫图案(如下图所示)来打开此帮助界面。"));
-        ((TextView) v.findViewById(R.id.t4)).setText(Html.fromHtml("&nbsp;&nbsp;--点击编辑某个栏目；长按复制该栏目中保存的命令。<br><br>&nbsp;&nbsp;--<u><b><big>单击</big></b></u>标题上的猫猫图案来切换APP为一次性运行命令的模式。<br><br>&nbsp;&nbsp;--点击主界面标题上的两个显示Shizuku状态的按钮中的任意一个，均可<u><b><big>刷新Shiuzku状态</big></b></u>。当然，关闭再打开本APP也是不错的刷新方法。<br><br>&nbsp;&nbsp;--如果您设备上的Shizuku服务是由root权限启动的，那么本APP在执行命令时也将具有root权限。假如您不希望<u><b><big>以如此高的权限执行命令</big></b></u>(大材小用)，您可以勾选命令编辑界面的“将root权限降至Shell”来让APP仅使用Shell权限执行命令。<br><br>&nbsp;&nbsp;--您可以点击本界面下方的设置按钮探索更多功能哦！"));
+        ((TextView) v.findViewById(R.id.t3)).setText(Html.fromHtml(getString(R.string.help_text_part1)));
+        ((TextView) v.findViewById(R.id.t4)).setText(Html.fromHtml(getString(R.string.help_text_part2)));
         new AlertDialog.Builder(MainActivity.this)
-                .setTitle("使用帮助")
+                .setTitle(R.string.help_title)
                 .setView(v)
-                .setNegativeButton("OK", null)
-                .setNeutralButton("设置", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.button_ok, null)
+                .setNeutralButton(R.string.button_settings, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         final AlertDialog dialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -121,7 +143,6 @@ public class MainActivity extends Activity {
 
                         View v = View.inflate(MainActivity.this, R.layout.set, null);
                         Switch S = v.findViewById(R.id.s);
-
                         S.setChecked(sp.getBoolean("hide", true));
                         S.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
@@ -131,13 +152,29 @@ public class MainActivity extends Activity {
                             }
                         });
                         Switch S1 = v.findViewById(R.id.s1);
-
                         S1.setChecked(sp.getBoolean("20", false));
                         S1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                                 sp.edit().putBoolean("20", b).apply();
-                                Toast.makeText(MainActivity.this, "重启APP后生效", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, R.string.restart_toast, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        // 语言切换开关
+                        Switch langSwitch = v.findViewById(R.id.lang_switch);
+                        langSwitch.setChecked("en".equals(sp.getString("language", "zh")));
+                        langSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                sp.edit().putString("language", isChecked ? "en" : "zh").apply();
+                                Toast.makeText(MainActivity.this, R.string.restart_toast, Toast.LENGTH_SHORT).show();
+                                // 延时重启当前 Activity 以应用语言
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        recreate();
+                                    }
+                                }, 500);
                             }
                         });
                         dialog.setView(v);
@@ -145,11 +182,9 @@ public class MainActivity extends Activity {
                     }
                 })
                 .create().show();
-
     }
 
     private void check() {
-
         //本函数用于检查shizuku状态，b代表shizuk是否运行，c代表shizuku是否授权
         b = true;
         c = false;
@@ -162,12 +197,12 @@ public class MainActivity extends Activity {
                 c = true;
             if (e.getClass() == IllegalStateException.class) {
                 b = false;
-                Toast.makeText(this, "Shizuku未运行", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.shizuku_not_running_toast, Toast.LENGTH_SHORT).show();
             }
         }
-        B.setText(b ? "Shizuku\n已运行" : "Shizuku\n未运行");
+        B.setText(b ? getString(R.string.shizuku_running) : getString(R.string.shizuku_not_running));
         B.setTextColor(b ? m : 0x77ff0000);
-        C.setText(c ? "Shizuku\n已授权" : "Shizuku\n未授权");
+        C.setText(c ? getString(R.string.shizuku_granted) : getString(R.string.shizuku_not_granted));
         C.setTextColor(c ? m : 0x77ff0000);
     }
 
@@ -245,10 +280,9 @@ public class MainActivity extends Activity {
         });
     }
 
-
     private void flipAnimation(View view, boolean enter) {
-    //flipAnimation是一个轻量级的翻转动画，很有趣哦
-    //Fix: 增加了返回动画
+        //flipAnimation是一个轻量级的翻转动画，很有趣哦
+        //Fix: 增加了返回动画
         ObjectAnimator a2;
         if (enter) {
             a2 = ObjectAnimator.ofFloat(view, "rotationY", 0f, 180f); // 进入：0° → 180°（左右镜像）
@@ -259,14 +293,11 @@ public class MainActivity extends Activity {
         a2.start();
     }
 
-
     public void exe(View view) {
-
         //EditText右边的执行按钮，点击后的事件
         if (e1.getText().length() > 0)
             startActivity(new Intent(this, Exec.class).putExtra("content", e1.getText().toString()));
     }
-
 
     public void initlist() {
         //根据用户设置，选择展示10个格子或者更多格子

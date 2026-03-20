@@ -163,24 +163,25 @@ public class adapter extends BaseAdapter {
 
                 //这里会根据用户是否勾选了降权，来执行不同的命令
                 //Fix: 改用 'su shell -c "command"' 实现降权
+                String dropHint = mContext.getString(R.string.drop_root_hint);
                 mContext.startActivity(new Intent(mContext, Exec.class).putExtra("content", 
                     b.getBoolean("shell", false) 
-                        ? "whoami|grep root &> /dev/null && { echo '提示:已将root降权至shell' 1>&2; su shell -c '" 
+                        ? "whoami|grep root &> /dev/null && { echo '" + dropHint + "' 1>&2; su shell -c '" 
                           + b.getString("content", " ").replace("'", "'\\''") 
                           + "'; } || " + b.getString("content", " ")
                         : b.getString("content", " ")
                 ));
             }
         } : voc);
-        holder.texta.setText(existn ? "空" : b.getString("name", "空"));
+        holder.texta.setText(existn ? mContext.getString(R.string.empty) : b.getString("name", mContext.getString(R.string.empty)));
         holder.texta.setTextColor(existc ? mContext.getResources().getColor(R.color.b) : mContext.getResources().getColor(R.color.a));
-        holder.textb.setText(existc ? "空" : b.getString("content", "空"));
+        holder.textb.setText(existc ? mContext.getString(R.string.empty) : b.getString("content", mContext.getString(R.string.empty)));
         holder.layout.setOnClickListener(voc);
         holder.layout.setOnLongClickListener(existc ? null : new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 ((ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("c", b.getString("content", "ls -l")));
-                Toast.makeText(mContext, "已复制该条命令至剪贴板:\n" + b.getString("content", "ls -l"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, mContext.getString(R.string.copied_to_clipboard) + b.getString("content", "ls -l"), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
