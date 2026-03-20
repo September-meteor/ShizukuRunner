@@ -4,7 +4,7 @@
 
     <application
         android:extractNativeLibs="true"
-        android:icon="@string/icon"
+        android:icon="@drawable/icon"
         android:label="ShizukuRunner"
         android:theme="@android:style/Theme.DeviceDefault.Dialog">
         <activity
