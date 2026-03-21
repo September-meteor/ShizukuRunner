@@ -98,88 +98,156 @@ t2.requestFocus();
         h1.start();
     }
 
-    public void ShizukuExec(String cmd) {
-        try {
-
-            //记录执行开始的时间
-            long time = System.currentTimeMillis();
-
-            //使用Shizuku执行命令
-            p = Shizuku.newProcess(new String[]{"sh"}, null, null);
-            OutputStream out = p.getOutputStream();
-            out.write((cmd + "\nexit\n").getBytes());
-            out.flush();
-            out.close();
-
-            //开启新线程，实时读取命令输出
-            h2 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BufferedReader mReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                        String inline;
-                        while ((inline = mReader.readLine()) != null) {
-
-                            //如果TextView的字符太多了（会使得软件非常卡顿），或者用户退出了执行界面（br为true），则停止读取
-                            if (t2.length() > 2000 || br) break;
-                            Message msg = new Message();
-                            msg.what = 0;
-                            msg.obj = inline.equals("") ? "\n" : inline + "\n";
-                            mHandler.sendMessage(msg);
-                        }
-                        mReader.close();
-                    } catch (Exception ignored) {
-                    }
-                }
-            });
-            h2.start();
-
-            //开启新线程，实时读取命令报错信息
-            h3 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BufferedReader mReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-                        String inline;
-                        while ((inline = mReader.readLine()) != null) {
-
-                            //如果TextView的字符太多了（会使得软件非常卡顿），或者用户退出了执行界面（br为true），则停止读取
-                            if (t2.length() > 2000 || br) break;
-                            Message msg = new Message();
-                            msg.what = 1;
-                            if (inline.equals(""))
-                                msg.obj = null;
-                            else {
-                                SpannableString ss = new SpannableString(inline+"\n");
-                                ss.setSpan(new ForegroundColorSpan(Color.RED), 0, ss.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                msg.obj = ss;
-                            }
-                            mHandler.sendMessage(msg);
-                        }
-                        mReader.close();
-                    } catch (Exception ignored) {
-                    }
-                }
-            });
-            h3.start();
-
-            //等待命令运行完毕
-            p.waitFor();
-
-            //获取命令返回值
-            String exitValue = String.valueOf(p.exitValue());
-
-            //显示命令返回值和命令执行时长
-            t1.post(new Runnable() {
-                @Override
-                public void run() {
-                    t1.setText(String.format(getString(R.string.return_value_format), exitValue, (System.currentTimeMillis() - time) / 1000f));
-                    setTitle(getString(R.string.exec_title_finished));
-                }
-            });
-        } catch (Exception ignored) {
+public void ShizukuExec(String cmd) {
+    try {
+        // 解析重定向
+        String actualCmd = cmd;
+        String redirectPath = null;
+        boolean append = false;
+        
+        if (cmd.contains(">>")) {
+            int index = cmd.indexOf(">>");
+            actualCmd = cmd.substring(0, index).trim();
+            redirectPath = cmd.substring(index + 2).trim();
+            append = true;
+        } else if (cmd.contains(">")) {
+            int index = cmd.indexOf('>');
+            actualCmd = cmd.substring(0, index).trim();
+            redirectPath = cmd.substring(index + 1).trim();
+            append = false;
         }
+        
+        // 清理路径引号
+        if (redirectPath != null) {
+            if (redirectPath.startsWith("\"") && redirectPath.endsWith("\"")) {
+                redirectPath = redirectPath.substring(1, redirectPath.length() - 1);
+            } else if (redirectPath.startsWith("'") && redirectPath.endsWith("'")) {
+                redirectPath = redirectPath.substring(1, redirectPath.length() - 1);
+            }
+        }
+        
+        long time = System.currentTimeMillis();
+        
+        // 有重定向时，用临时文件中转
+        final String tempFilePath = redirectPath != null ? 
+            "/data/local/tmp/shizuku_" + System.currentTimeMillis() + ".tmp" : null;
+        final String finalRedirectPath = redirectPath;
+        final boolean finalAppend = append;
+        
+        String shCmd = actualCmd;
+        if (redirectPath != null) {
+            shCmd = actualCmd + " > " + tempFilePath;
+        }
+        
+        p = Shizuku.newProcess(new String[]{"sh"}, null, null);
+        OutputStream out = p.getOutputStream();
+        out.write((shCmd + "\nexit\n").getBytes());
+        out.flush();
+        out.close();
+        
+        h2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BufferedReader mReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    String inline;
+                    while ((inline = mReader.readLine()) != null) {
+                        if (t2.length() > 2000 || br) break;
+                        Message msg = new Message();
+                        msg.what = 0;
+                        msg.obj = inline.equals("") ? "\n" : inline + "\n";
+                        mHandler.sendMessage(msg);
+                    }
+                    mReader.close();
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        h2.start();
+        
+        h3 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BufferedReader mReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                    String inline;
+                    while ((inline = mReader.readLine()) != null) {
+                        if (t2.length() > 2000 || br) break;
+                        Message msg = new Message();
+                        msg.what = 1;
+                        if (inline.equals(""))
+                            msg.obj = null;
+                        else {
+                            SpannableString ss = new SpannableString(inline + "\n");
+                            ss.setSpan(new ForegroundColorSpan(Color.RED), 0, ss.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            msg.obj = ss;
+                        }
+                        mHandler.sendMessage(msg);
+                    }
+                    mReader.close();
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        h3.start();
+        
+        p.waitFor();
+        
+        // 有重定向时，处理文件复制
+        if (p.exitValue() == 0 && finalRedirectPath != null && tempFilePath != null) {
+            Process checkProcess = Shizuku.newProcess(new String[]{"sh"}, null, null);
+            OutputStream checkOut = checkProcess.getOutputStream();
+            checkOut.write(("[ -f " + tempFilePath + " ] && echo 1 || echo 0\nexit\n").getBytes());
+            checkOut.flush();
+            checkOut.close();
+            
+            BufferedReader checkReader = new BufferedReader(new InputStreamReader(checkProcess.getInputStream()));
+            String checkResult = checkReader.readLine();
+            checkReader.close();
+            checkProcess.waitFor();
+            
+            if ("1".equals(checkResult)) {
+                // 复制文件
+                Process copyProcess = Shizuku.newProcess(new String[]{"sh"}, null, null);
+                OutputStream copyOut = copyProcess.getOutputStream();
+                
+                String dirPath = finalRedirectPath.substring(0, finalRedirectPath.lastIndexOf('/'));
+                String copyCmd = "mkdir -p '" + dirPath + "' && cat '" + tempFilePath + "' ";
+                copyCmd += finalAppend ? ">> '" : "> '";
+                copyCmd += finalRedirectPath + "'";
+                
+                copyOut.write((copyCmd + "\nexit\n").getBytes());
+                copyOut.flush();
+                copyOut.close();
+                copyProcess.waitFor();
+            }
+            
+            // 清理临时文件
+            Process cleanupProcess = Shizuku.newProcess(new String[]{"sh"}, null, null);
+            OutputStream cleanupOut = cleanupProcess.getOutputStream();
+            cleanupOut.write(("rm -f '" + tempFilePath + "'\nexit\n").getBytes());
+            cleanupOut.flush();
+            cleanupOut.close();
+            cleanupProcess.waitFor();
+        }
+        
+        String exitValue = String.valueOf(p.exitValue());
+        t1.post(new Runnable() {
+            @Override
+            public void run() {
+                t1.setText(String.format(getString(R.string.return_value_format), exitValue, (System.currentTimeMillis() - time) / 1000f));
+                setTitle(getString(R.string.exec_title_finished));
+            }
+        });
+        
+    } catch (Exception e) {
+        Message msg = new Message();
+        msg.what = 1;
+        SpannableString ss = new SpannableString("执行异常: " + e.getMessage() + "\n");
+        ss.setSpan(new ForegroundColorSpan(Color.RED), 0, ss.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mHandler.sendMessage(msg);
     }
+}
 
     @Override
     public void onDestroy() {
