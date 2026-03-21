@@ -2,7 +2,7 @@
 
 ## 一、声明
 
-![icon](app/src/main/res/drawable/icon.png)
+<img width="146" height="146" alt="Image" src="https://github.com/user-attachments/assets/0020cc07-1fd6-40e4-9f8b-c4bb8ce5a3f5" />
 
 - 本项目为 [WuDi-ZhanShen/ShizukuRunner](https://github.com/WuDi-ZhanShen/ShizukuRunner) 的非官方衍生版本。
 - **由于上游项目未提供 LICENSE 文件，本项目仅供学习交流使用，严禁用于商业用途。**
@@ -11,22 +11,24 @@
 
 ---
 
+
 ## 二、与原版的区别
 
 本版本在保留原版全部功能的基础上，做了以下改进：
 
 ### 1. 双语支持与界面优化
-- **增加中英双语切换**：将所有硬编码字符串抽取至资源文件，新增完整英文翻译，设置中可一键切换语言。
-- **优化猫猫点击动画**：绕 Y 轴 180° 翻转，且从单次命令模式返回时同样有翻转动画，视觉更连贯。
+- **增加中英双语切换**：将所有硬编码字符串抽取至资源文件，新增完整英文翻译，设置中可一键切换语言，并修复了相关的资源编译错误。
+- **优化猫猫点击动画**：绕 Y 轴 180° 翻转，使其从单次命令模式返回时同样有翻转动画，视觉更连贯。
 
 ### 2. Bug 修复
+- **修复 Shizuku 环境下重定向命令执行失败**：解决了在 Shizuku 中执行带 `>` 或 `>>` 重定向符的命令时，因 Binder 事务缓冲区限制导致的 `Failed transaction` 错误。通过解析重定向符、引入临时文件中转机制，确保了大输出量命令的文件写入成功。
 - **修复执行命令时空消息导致的崩溃**：增加了 `null` 检查和 `activity` 判空，错误信息统一标红。
 - **修复“将 root 降权至 shell”功能**：原版依赖可能不存在的 `libchid.so` 并试图直接执行它，现改用 `su shell -c` 实现，不会在运行后输出相关报错。
 - **修复签名硬编码路径和不再兼容的语法**：避免在非 Windows 环境编译时报错，同时将 Kotlin DSL 语法修正为 Groovy DSL（AGP 7.2.2 要求）。
-- **修复 drawable 资源类型引用错误**：将 `@string/xxx` 改为 `@drawable/xxx`，使 Release 构建正常通过。
+- **修复 drawable 资源类型引用错误**：将 `@string/xxx` 改为 `@drawable/xxx`，使 Release 构建正常通过，减小了安装包体积。
 
 ### 3. 构建与配置优化
-- **添加 `.gitignore` 文件**：忽略构建产物（`.gradle/`、`app/build/` 等）、IDE 文件和临时文件，减小了仓库体积。
+- **添加 `.gitignore` 文件**：忽略构建产物（`.gradle/`、`app/build/` 等）、IDE 文件和临时文件，保持仓库整洁。
 - **升级 Gradle 至 7.5.1，AGP 至 7.2.2**，移除废弃的 `jcenter()` 仓库，避免构建报错。
 - **消除编译警告**：添加 `compileOnly annotation:1.3.0` 解决 Scope 枚举警告；用 `@SuppressWarnings("deprecation")` 抑制已弃用 API 警告。
 - **为 Termux 环境编译添加配置注释**：在 `gradle.properties` 中提供了 aapt2 和 JDK 17 路径的示例，方便有需要的用户直接启用。
@@ -148,8 +150,6 @@ cp app/build/outputs/apk/release/app-release-unsigned.apk /sdcard/Download/Shizu
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img width="109.286" height="99.857" alt="Image" src="https://github.com/user-attachments/assets/4ca0a15f-0bb5-47a5-9fdd-c73a0691eece" />
 </div>
-
-
 
 1. **确保你的 Shizuku 处于激活状态。**
 
