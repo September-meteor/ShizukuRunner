@@ -1,8 +1,8 @@
-# ShizukuRunner-PUV (Personal Use Version)
+# ShizukuRunner
 
 ## 一、声明
 
-<img width="146" height="146" alt="Image" src="https://github.com/user-attachments/assets/0020cc07-1fd6-40e4-9f8b-c4bb8ce5a3f5" />
+<img width="146" height="146" alt="Image" src="https://github.com/user-attachments/assets/ae4cee82-4810-45e4-a596-4d47fde46bfa" />
 
 - 本项目为 [WuDi-ZhanShen/ShizukuRunner](https://github.com/WuDi-ZhanShen/ShizukuRunner) 的非官方衍生版本。
 - **由于上游项目未提供 LICENSE 文件，本项目仅供学习交流使用，严禁用于商业用途。**
@@ -11,7 +11,6 @@
 
 ---
 
-
 ## 二、与原版的区别
 
 本版本在保留原版全部功能的基础上，做了以下改进：
@@ -19,6 +18,7 @@
 ### 1. 双语支持与界面优化
 - **增加中英双语切换**：将所有硬编码字符串抽取至资源文件，新增完整英文翻译，设置中可一键切换语言，并修复了相关的资源编译错误。
 - **优化猫猫点击动画**：绕 Y 轴 180° 翻转，使其从单次命令模式返回时同样有翻转动画，视觉更连贯。
+- **增加多行输入模式（实验）**：在设置中开启功能，开启后在单次命令模式下可通过显式按钮切换模式，切换后可输入多行命令并执行。
 
 ### 2. Bug 修复
 - **修复 Shizuku 环境下重定向命令执行失败**：解决了在 Shizuku 中执行带 `>` 或 `>>` 重定向符的命令时，因 Binder 事务缓冲区限制导致的 `Failed transaction` 错误。通过解析重定向符、引入临时文件中转机制，确保了大输出量命令的文件写入成功。
@@ -37,7 +37,7 @@
 
 ## 三、下载
 
-你可以在 [Releases 页面](https://github.com/September-meteor/ShizukuRunner-PUV/releases) 下载预编译的 APK 文件。
+你可以在 [Releases 页面](https://github.com/September-meteor/ShizukuRunner/releases) 下载预编译的 APK 文件。
 
 但是这个版本因为本人能力有限，因此该版本**仅实验性构建，不保证一定可用，仅供测试**。
 
@@ -65,7 +65,7 @@ pkg install git openjdk-17 aapt2 wget unzip
 
 2. 克隆本仓库：
 ```bash
-git clone https://github.com/September-meteor/ShizukuRunner-PUV.git ShizukuRunner
+git clone https://github.com/September-meteor/ShizukuRunner.git ShizukuRunner
 cd ShizukuRunner
 ```
 
@@ -146,9 +146,9 @@ cp app/build/outputs/apk/release/app-release-unsigned.apk /sdcard/Download/Shizu
 与原版完全一致：
 
 <div align="center">
-  <img width="240" height="101.111" alt="Image" src="https://github.com/user-attachments/assets/8f553cb6-0ffb-4134-9135-fd43e068a99a" />
+  <img width="240" height="101.111" alt="Image" src="https://github.com/user-attachments/assets/d69ed3fa-0a25-42ac-bad1-29eefd198789" />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img width="109.286" height="99.857" alt="Image" src="https://github.com/user-attachments/assets/4ca0a15f-0bb5-47a5-9fdd-c73a0691eece" />
+  <img width="109.286" height="99.857" alt="Image" src="https://github.com/user-attachments/assets/b68a60e8-e2f7-4bd2-a4a6-4fe9dcf01bf7" />
 </div>
 
 1. **确保你的 Shizuku 处于激活状态。**
@@ -159,11 +159,12 @@ cp app/build/outputs/apk/release/app-release-unsigned.apk /sdcard/Download/Shizu
    - “不在后台显示”，默认勾选。勾选它时，ShizukuRunner 将不会出现在你的后台中。如果你离开前台，它就会消失，下次你将需要重新点击应用图标来打开它。
    - “开启50格命令栏”，默认不勾选。勾选它时，你会发现原来的命令输入框从十个变成数十个，同时增加屏幕占用面积。
    - “English”，默认不勾选。勾选它后，应用语言将切换至英语。
+   - “实验性功能：多行命令模式”，默认不勾选。勾选后，单次命令模式下会多出一个灰色加号，点击后会进入多行命令输入模式，这时点击回车键将换行而非直接执行命令。
    - 点击空白处你将退出设置。但是你可以长按主页上的猫猫图标来再次唤出使用帮助界面。
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/0b97c0c3-3243-47fc-a7c1-c24337737766" width="48">
-</p>
+<div align="center">
+<img width="48" height="48" alt="Image" src="https://github.com/user-attachments/assets/b56172fa-260e-421e-8a71-e82c646042c9" />
+</div>
 
 4. 点击 ShizukuRunner 界面上的“空/空”输入框或灰色加号：
    - 在弹出的弹窗内，第一个输入框输入你想命名的名称（可不填）。
@@ -176,7 +177,7 @@ cp app/build/outputs/apk/release/app-release-unsigned.apk /sdcard/Download/Shizu
    - 如果你不是 root 用户，可以无视“将root权限降至shell”选项。
    - 点击“完成”退出编辑。
 
-5. 这时你会发现输入框右边的灰色加号变成了运行按钮（`>`），点击它即可运行你刚刚写下的命令。
+5. 这时你会发现输入框右边的灰色加号变成了运行按钮（`>`），点击它即可运行你刚刚写下的命令。长按输出结果可复制到剪切板。
 
 6. 如果你想退出 ShizukuRunner，点击空白处，或是使用手机的返回键均可。
 
@@ -202,6 +203,6 @@ cp app/build/outputs/apk/release/app-release-unsigned.apk /sdcard/Download/Shizu
 
 ## 七、反馈
 
-如果你在使用中遇到任何问题，或者有改进建议，欢迎提交 [Issue](https://github.com/September-meteor/ShizukuRunner-PUV/issues) 或 Pull Request。
+如果你在使用中遇到任何问题，或者有改进建议，欢迎提交 [Issue](https://github.com/September-meteor/ShizukuRunner/issues) 或 Pull Request。
 
 感谢原作者的创意和基础工作，也希望这只可爱的小猫咪🐱能帮到更多人！🥰
