@@ -53,7 +53,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-
         </LinearLayout>
 
         <LinearLayout
@@ -68,12 +67,21 @@
                 android:id="@+id/e"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:layout_gravity="center"
                 android:layout_weight="1"
                 android:background="@null"
                 android:imeOptions="actionDone"
                 android:hint="@string/hint_command"
                 android:singleLine="true" />
+
+            <ImageButton
+                android:id="@+id/toggle_mode"
+                style="@android:style/Widget.Material.Button.Borderless.Colored"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:src="@drawable/plus" />
 
             <ImageButton
                 style="@android:style/Widget.Material.Button.Borderless.Colored"
@@ -84,8 +92,6 @@
                 android:src="@drawable/run" />
         </LinearLayout>
 
-
     </LinearLayout>
-
 
 </LinearLayout>

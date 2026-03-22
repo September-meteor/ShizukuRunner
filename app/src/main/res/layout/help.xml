@@ -30,7 +30,7 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:lines="3"
-            android:text="\nAPP功能介绍"
+            android:text="@string/app_features"
             android:textSize="18sp"
             android:textStyle="bold" />
 
