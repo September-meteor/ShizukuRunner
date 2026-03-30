@@ -28,9 +28,8 @@
     <string name="app_features">App Features</string>
     <string name="help_text_part2"><![CDATA[&#160;&#160;--Tap to edit an entry; long press to copy the saved command.<br/><br/>&#160;&#160;--<u><b><big>Single tap</big></b></u> the cat icon on the title to switch to one‑time command mode.<br/><br/>&#160;&#160;--Tap either of the two Shizuku status buttons on the main screen title to <u><b><big>refresh Shizuku status</big></b></u>. Closing and reopening the app also works.<br/><br/>&#160;&#160;--If Shizuku is started with root, this app will also run commands with root. If you prefer <u><b><big>not to use such high privilege</big></b></u>, you can check “Drop root to shell” in the command edit dialog to run commands with shell privileges only.<br/><br/>&#160;&#160;--Tap the Settings button at the bottom of this screen to explore more features!]]></string>
     <string name="drop_root_hint">Hint: dropped root to shell</string>
-    <string name="single_line_mode">Single-line mode (Enter executes)</string>
-    <string name="multi_line_mode">Multi-line mode (Enter inserts newline)</string>
-    <string name="experimental_multi_line">Multi-line Command Pattern (Experimental)</string>
+    <string name="multi_line_mode">Multi-line Command Pattern</string>
+    <string name="auto_wrap_experimental">Automatic Line Breaks (Experimental)</string>
     <string name="copied_output_to_clipboard">Copied to clipboard</string>   <!-- 新名称 -->
     <string name="nothing_to_copy">Nothing to copy</string>
 </resources>

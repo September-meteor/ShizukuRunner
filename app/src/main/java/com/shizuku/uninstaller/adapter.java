@@ -107,6 +107,9 @@ public class adapter extends BaseAdapter {
                 final EditText editText = v.findViewById(R.id.e);
                 editText.setText(b.getString("content", null));
 
+                // ===== 应用输入模式设置（包括多行模式和自动换行）=====
+                MainActivity.applyInputModeToEditText(editText);
+
                 editText.setOnKeyListener(new View.OnKeyListener() {
                     @Override
                     public boolean onKey(View view, int i, KeyEvent keyEvent) {
