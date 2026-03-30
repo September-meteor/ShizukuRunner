@@ -27,11 +27,19 @@
         android:text="@string/language_switch"
         android:padding="16dp"/>
 
+    <!-- 多行命令模式开关（替代原来的实验性功能+切换按钮） -->
     <Switch
-        android:id="@+id/experimental_switch"
+        android:id="@+id/multi_line_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/experimental_multi_line"
-        android:padding="16dp" />
+        android:text="@string/multi_line_mode"
+        android:padding="10dp" />
+
+    <Switch
+        android:id="@+id/auto_wrap_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/auto_wrap_experimental"
+        android:padding="10dp"
+        android:checked="true" />
 </LinearLayout>

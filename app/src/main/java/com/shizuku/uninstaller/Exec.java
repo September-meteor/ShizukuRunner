@@ -81,6 +81,10 @@ public class Exec extends Activity {
         setContentView(R.layout.exec);
         t1 = findViewById(R.id.t1);
         t2 = findViewById(R.id.t2);
+        
+        // ===== 设置输出文本自动换行 =====
+        t2.setHorizontallyScrolling(false);
+        
         t2.requestFocus();
         t2.setOnKeyListener(new View.OnKeyListener() {
             @Override
