@@ -107,6 +107,9 @@ public class adapter extends BaseAdapter {
                 final EditText editText = v.findViewById(R.id.e);
                 editText.setText(b.getString("content", null));
 
+                // ===== 应用自动换行设置 =====
+                MainActivity.applyAutoWrapToEditText(editText);
+
                 editText.setOnKeyListener(new View.OnKeyListener() {
                     @Override
                     public boolean onKey(View view, int i, KeyEvent keyEvent) {

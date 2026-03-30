@@ -21,7 +21,6 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.Window;
 import android.view.animation.LinearInterpolator;
@@ -32,7 +31,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -40,9 +38,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.WindowManager;
-import android.graphics.PixelFormat;
 import android.widget.PopupWindow;
-import android.view.WindowManager;
 
 import java.util.Locale;
 
@@ -58,13 +54,13 @@ public class MainActivity extends Activity {
     EditText e1;
     ImageView iv;
     SharedPreferences sp;
-    // 多行模式相关
-    private boolean isMultiLineMode = false;
+    // 多行模式相关（现在由设置直接控制，不需要切换按钮）
     private ImageButton toggleButton;
     // 自定义 Toast 相关
-    private TextView customToast;
     private Handler toastHandler;
     private PopupWindow customPopup;
+    // 静态实例供 adapter 使用
+    private static MainActivity instance;
 
     //shizuku监听授权结果
     private final Shizuku.OnRequestPermissionResultListener RL = this::onRequestPermissionsResult;
@@ -95,6 +91,8 @@ public class MainActivity extends Activity {
         applyLanguage();
 
         super.onCreate(savedInstanceState);
+        instance = this;
+        
         //根据系统深色模式自动切换软件的深色/亮色主题
         if (((UiModeManager) getSystemService(Service.UI_MODE_SERVICE)).getNightMode() == UiModeManager.MODE_NIGHT_NO)
             setTheme(android.R.style.Theme_DeviceDefault_Light_Dialog);
@@ -104,7 +102,7 @@ public class MainActivity extends Activity {
             showHelp();
             sp.edit().putBoolean("first", false).apply();
         }
-        //读取用户设置“是否隐藏后台”，并进行隐藏后台
+        //读取用户设置"是否隐藏后台"，并进行隐藏后台
         ((ActivityManager) getSystemService(Service.ACTIVITY_SERVICE)).getAppTasks().get(0).setExcludeFromRecents(sp.getBoolean("hide", true));
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
@@ -141,6 +139,28 @@ public class MainActivity extends Activity {
         initlist();
     }
 
+    // 供外部调用的静态方法：获取自动换行设置
+    public static boolean isAutoWrapEnabled() {
+        if (instance == null || instance.sp == null) return true;
+        return instance.sp.getBoolean("auto_wrap", true);
+    }
+
+    // 供外部调用的静态方法：应用自动换行到 EditText
+    public static void applyAutoWrapToEditText(EditText editText) {
+        if (editText == null) return;
+        boolean autoWrap = isAutoWrapEnabled();
+        if (autoWrap) {
+            editText.setHorizontallyScrolling(false);
+            editText.setSingleLine(false);
+            editText.setMaxLines(5);
+            editText.setMinLines(1);
+        } else {
+            editText.setSingleLine(true);
+            editText.setHorizontallyScrolling(true);
+            editText.setMaxLines(1);
+        }
+    }
+
     private void showHelp() {
         //展示帮助界面
         View v = LayoutInflater.from(MainActivity.this).inflate(R.layout.help, null);
@@ -158,6 +178,8 @@ public class MainActivity extends Activity {
                         dialog.getWindow().setGravity(Gravity.BOTTOM);
 
                         View v = View.inflate(MainActivity.this, R.layout.set, null);
+                        
+                        // 隐藏后台开关
                         Switch S = v.findViewById(R.id.s);
                         S.setChecked(sp.getBoolean("hide", true));
                         S.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -167,6 +189,8 @@ public class MainActivity extends Activity {
                                 ((ActivityManager) getSystemService(Service.ACTIVITY_SERVICE)).getAppTasks().get(0).setExcludeFromRecents(b);
                             }
                         });
+                        
+                        // 20格开关
                         Switch S1 = v.findViewById(R.id.s1);
                         S1.setChecked(sp.getBoolean("20", false));
                         S1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -176,6 +200,7 @@ public class MainActivity extends Activity {
                                 Toast.makeText(MainActivity.this, R.string.restart_toast, Toast.LENGTH_SHORT).show();
                             }
                         });
+                        
                         // 语言切换开关
                         Switch langSwitch = v.findViewById(R.id.lang_switch);
                         langSwitch.setChecked("en".equals(sp.getString("language", "zh")));
@@ -193,23 +218,27 @@ public class MainActivity extends Activity {
                             }
                         });
 
-                        // 新增实验性功能开关
-                        Switch experimentalSwitch = v.findViewById(R.id.experimental_switch);
-                        experimentalSwitch.setChecked(sp.getBoolean("experimental_multi_line", false));
-                        experimentalSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        // 多行命令模式开关（替代原来的实验性功能）
+                        Switch multiLineSwitch = v.findViewById(R.id.multi_line_switch);
+                        multiLineSwitch.setChecked(sp.getBoolean("multi_line_mode", false));
+                        multiLineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                             @Override
                             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                sp.edit().putBoolean("experimental_multi_line", isChecked).apply();
-                                // 如果关闭实验功能且当前处于多行模式，强制切回单行并隐藏切换按钮
-                                if (!isChecked && isMultiLineMode && e1 != null) {
-                                    isMultiLineMode = false;
-                                    setupSingleLineMode();
-                                    if (toggleButton != null) toggleButton.setVisibility(View.GONE);
-                                } else if (isChecked && e1 != null && toggleButton != null) {
-                                    // 开启实验功能，且当前正在命令输入模式，显示切换按钮
-                                    if (findViewById(R.id.l1).getVisibility() == View.VISIBLE) {
-                                        toggleButton.setVisibility(View.VISIBLE);
-                                    }
+                                sp.edit().putBoolean("multi_line_mode", isChecked).apply();
+                                Toast.makeText(MainActivity.this, R.string.restart_toast, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        // 自动换行开关
+                        Switch autoWrapSwitch = v.findViewById(R.id.auto_wrap_switch);
+                        autoWrapSwitch.setChecked(sp.getBoolean("auto_wrap", true));
+                        autoWrapSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                sp.edit().putBoolean("auto_wrap", isChecked).apply();
+                                // 如果当前在命令输入模式，立即应用更改
+                                if (e1 != null && findViewById(R.id.l1).getVisibility() == View.VISIBLE) {
+                                    applyAutoWrapToEditText(e1);
                                 }
                             }
                         });
@@ -247,6 +276,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         //在APP退出时，取消注册Shizuku授权结果监听，这是Shizuku的要求
         Shizuku.removeRequestPermissionResultListener(RL);
+        instance = null;
         super.onDestroy();
     }
 
@@ -263,8 +293,8 @@ public class MainActivity extends Activity {
 
     public void ex(View view) {
         //单击猫猫头像的点击事件，让list变不可见，让EditText可见。
-        boolean entering = d.getVisibility() == View.VISIBLE; // 当前列表可见 → 正要进入执行模式
-        flipAnimation(view, entering); // 根据方向执行动画
+        boolean entering = d.getVisibility() == View.VISIBLE;
+        flipAnimation(view, entering);
 
         if (entering) {
             // 进入执行模式（隐藏列表，显示输入框）
@@ -276,20 +306,15 @@ public class MainActivity extends Activity {
             e1 = findViewById(R.id.e);
             toggleButton = findViewById(R.id.toggle_mode);
 
-            // 获取实验性功能开关状态
-            boolean experimental = sp.getBoolean("experimental_multi_line", false);
-            if (experimental) {
-                // 开启实验性功能：显示切换按钮，默认为单行模式
-                toggleButton.setVisibility(View.VISIBLE);
-                isMultiLineMode = false;
-                setupSingleLineMode();
-                toggleButton.setOnClickListener(this::toggleMultiLineMode);
+            // 隐藏切换按钮（现在由设置直接控制，不需要切换按钮了）
+            toggleButton.setVisibility(View.GONE);
+
+            // 根据设置决定是单行还是多行模式
+            boolean multiLineMode = sp.getBoolean("multi_line_mode", false);
+            if (multiLineMode) {
+                setupMultiLineMode();
             } else {
-                // 未开启实验性功能：隐藏切换按钮，强制单行模式
-                toggleButton.setVisibility(View.GONE);
-                isMultiLineMode = false;
                 setupSingleLineMode();
-                toggleButton.setOnClickListener(null);
             }
 
             e1.setEnabled(true);
@@ -307,8 +332,6 @@ public class MainActivity extends Activity {
             e1.setEnabled(false);
             initlist();
             findViewById(R.id.l1).setVisibility(View.GONE);
-            // 重置多行模式标志，下次进入默认为单行
-            isMultiLineMode = false;
         }
 
         // 重置点击监听，保证下次点击仍然进入此方法
@@ -321,35 +344,30 @@ public class MainActivity extends Activity {
     }
 
     private void flipAnimation(View view, boolean enter) {
-        //flipAnimation是一个轻量级的翻转动画，很有趣哦
-        //Fix: 增加了返回动画
         ObjectAnimator a2;
         if (enter) {
-            a2 = ObjectAnimator.ofFloat(view, "rotationY", 0f, 180f); // 进入：0° → 180°（左右镜像）
+            a2 = ObjectAnimator.ofFloat(view, "rotationY", 0f, 180f);
         } else {
-            a2 = ObjectAnimator.ofFloat(view, "rotationY", 180f, 0f); // 返回：180° → 0°
+            a2 = ObjectAnimator.ofFloat(view, "rotationY", 180f, 0f);
         }
         a2.setDuration(300).setInterpolator(new LinearInterpolator());
         a2.start();
     }
 
     public void exe(View view) {
-        //EditText右边的执行按钮，点击后的事件
         if (e1.getText().length() > 0) {
             String raw = e1.getText().toString();
-            String clean = raw.replace("\r", ""); // 去除回车符，防止 shell 报错
+            String clean = raw.replace("\r", "");
             startActivity(new Intent(this, Exec.class).putExtra("content", clean));
         }
     }
 
     public void initlist() {
-        //根据用户设置，选择展示10个格子或者更多格子
         int[] e1 = sp.getBoolean("20", false) ? new int[]{5, 6, 7, 8, 9, 15, 16, 17, 18, 19, 25, 26, 27, 28, 29, 35, 36, 37, 38, 39, 45, 46, 47, 48, 49} : new int[]{5, 6, 7, 8, 9};
         int[] d1 = sp.getBoolean("20", false) ? new int[]{0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44} : new int[]{0, 1, 2, 3, 4};
         e.setAdapter(new adapter(this, e1));
         d.setAdapter(new adapter(this, d1));
 
-        //加一点动画，非常的丝滑~~
         TranslateAnimation animation = new TranslateAnimation(-50f, 0f, -30f, 0f);
         animation.setDuration(500);
         LayoutAnimationController controller = new LayoutAnimationController(animation, 0.1f);
@@ -361,13 +379,15 @@ public class MainActivity extends Activity {
         e.setLayoutAnimation(controller);
     }
 
-    // ========== 多行模式切换相关 ==========
+    // ========== 输入模式设置 ==========
 
     private void setupSingleLineMode() {
         // 单行模式：回车直接执行，不换行
-        e1.setSingleLine(true);
         e1.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-        e1.setHorizontallyScrolling(true);
+        
+        // 应用自动换行设置
+        applyAutoWrapToEditText(e1);
+        
         // 设置回车执行监听
         e1.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -389,10 +409,6 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
-        // 设置切换按钮图标为加号（表示可扩展）
-        if (toggleButton != null) {
-            toggleButton.setImageResource(R.drawable.plus);
-        }
     }
 
     private void setupMultiLineMode() {
@@ -400,64 +416,36 @@ public class MainActivity extends Activity {
         e1.setSingleLine(false);
         e1.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         e1.setHorizontallyScrolling(false);
-        // 移除回车执行监听，保留默认回车换行行为
+        e1.setMinLines(3);   // 多行模式下最少显示3行
+        e1.setMaxLines(10);  // 最多10行
+        
+        // 移除单行模式的监听器，让回车默认换行
         e1.setOnEditorActionListener(null);
         e1.setOnKeyListener(null);
-        // 设置切换按钮图标为编辑图标（表示正在编辑）
-        // 使用系统图标，避免增加资源文件
-        if (toggleButton != null) {
-            toggleButton.setImageResource(android.R.drawable.ic_menu_edit);
-        }
     }
 
-    public void toggleMultiLineMode(View view) {
-        // 保存当前光标位置
-        int cursorPos = e1.getSelectionStart();
-
-        if (isMultiLineMode) {
-            // 当前是多行，切换到单行
-            isMultiLineMode = false;
-            setupSingleLineMode();
-            showShortToast(getString(R.string.single_line_mode));
-        } else {
-            // 当前是单行，切换到多行
-            isMultiLineMode = true;
-            setupMultiLineMode();
-            showShortToast(getString(R.string.multi_line_mode));
-        }
-
-        // 恢复光标位置（避免超出文本长度）
-        if (cursorPos >= 0 && cursorPos <= e1.getText().length()) {
-            e1.setSelection(cursorPos);
-        }
-
-        // 确保软键盘保持显示
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(e1, InputMethodManager.SHOW_IMPLICIT);
-    }
-
-    // ========== 自定义 Toast（底部显示）==========
+    // ========== 自定义 Toast ==========
     private void showShortToast(String msg) {
         if (toastHandler == null) toastHandler = new Handler();
         if (customPopup != null && customPopup.isShowing()) {
             customPopup.dismiss();
             toastHandler.removeCallbacksAndMessages(null);
         }
-    
+
         TextView textView = new TextView(this);
         textView.setText(msg);
-        textView.setBackgroundColor(0xCC000000);  // 半透明黑底，略淡
+        textView.setBackgroundColor(0xCC000000);
         textView.setTextColor(0xFFFFFFFF);
-        textView.setPadding(32, 16, 32, 16);      // 缩小内边距
+        textView.setPadding(32, 16, 32, 16);
         textView.setGravity(Gravity.CENTER);
-        textView.setTextSize(10);                 // 字体小一号
-        textView.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.5)); // 宽度缩小至屏幕一半
+        textView.setTextSize(10);
+        textView.setMaxWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.5));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             textView.setElevation(6);
             textView.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             textView.setClipToOutline(true);
         }
-    
+
         customPopup = new PopupWindow(textView,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT);
@@ -466,25 +454,15 @@ public class MainActivity extends Activity {
         customPopup.setTouchable(false);
         customPopup.setOutsideTouchable(false);
         customPopup.setBackgroundDrawable(null);
-    
-        // 显示位置保持原样（顶部居中，y=0 覆盖状态栏）
+
         View rootView = getWindow().getDecorView().getRootView();
         customPopup.showAtLocation(rootView, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
-    
+
         toastHandler.postDelayed(() -> {
             if (customPopup != null && customPopup.isShowing()) {
                 customPopup.dismiss();
                 customPopup = null;
             }
         }, 800);
-    }
-
-    private int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
     }
 }
