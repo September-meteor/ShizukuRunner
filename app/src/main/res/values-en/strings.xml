@@ -32,4 +32,19 @@
     <string name="auto_wrap_experimental">Automatic Line Breaks (Experimental)</string>
     <string name="copied_output_to_clipboard">Copied to clipboard</string>   <!-- 新名称 -->
     <string name="nothing_to_copy">Nothing to copy</string>
+<string name="import_config">Import Commands</string>
+<string name="export_config">Export Config</string>
+<string name="edit_env">Edit Env Vars</string>
+<string name="import_config_title">Import Command Config</string>
+<string name="edit_env_title">Edit Environment Variables</string>
+<string name="import_hint">Format: ID, name, command (one per line)\nSeparate entries with blank lines\n\nExample:\n1\nBattery\ndumpsys batterystats | grep capacity</string>
+<string name="env_hint">Format: KEY=VALUE, one per line</string>
+<string name="import_empty">Content is empty</string>
+<string name="import_success">Imported %d commands</string>
+<string name="export_empty">No commands to export</string>
+<string name="export_success">Config copied to clipboard</string>
+<string name="env_saved">Saved, effective next execution</string>
+<string name="button_save">Save</string>
+<string name="button_import">Import</string>
+<string name="button_cancel">Cancel</string>
 </resources>

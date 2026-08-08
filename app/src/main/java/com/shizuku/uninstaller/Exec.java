@@ -24,6 +24,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
+import android.content.SharedPreferences;
+import java.util.ArrayList;
+import java.util.List;
+
 import rikka.shizuku.Shizuku;
 
 public class Exec extends Activity {
@@ -160,7 +164,8 @@ public class Exec extends Activity {
                 shCmd = actualCmd + " > " + tempFilePath;
             }
 
-            p = Shizuku.newProcess(new String[]{"sh"}, null, null);
+            String[] envp = buildEnvArray();
+            p = Shizuku.newProcess(new String[]{"sh"}, envp, null);
             OutputStream out = p.getOutputStream();
             out.write((shCmd + "\nexit\n").getBytes());
             out.flush();
@@ -292,6 +297,23 @@ public class Exec extends Activity {
                 }
             }
         }, 1000);
+
         super.onDestroy();
+    }
+
+    private String[] buildEnvArray() {
+        SharedPreferences sp = getSharedPreferences("data", MODE_PRIVATE);
+        String envContent = sp.getString("env_content", "").trim();
+        if (envContent.isEmpty()) return null;
+
+        List<String> envList = new ArrayList<>();
+        for (String line : envContent.split("\\n")) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) continue;
+            if (line.contains("=")) {
+                envList.add(line);
+            }
+        }
+        return envList.isEmpty() ? null : envList.toArray(new String[0]);
     }
 }

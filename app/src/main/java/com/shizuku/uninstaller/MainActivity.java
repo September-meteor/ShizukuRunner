@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
                                 layout.setPadding(32, 24, 32, 24);
 
                                 TextView hintText = new TextView(MainActivity.this);
-                                hintText.setText("每项占一行：编号、名称、命令\n用空行分隔不同条目，只写编号可清空\n\n示例：\n1\n电池容量\ndumpsys batterystats | grep capacity");
+                                hintText.setText(R.string.import_hint);
                                 hintText.setPadding(0, 0, 0, 16);
                                 layout.addView(hintText);
 
@@ -316,14 +316,14 @@ public class MainActivity extends Activity {
                                 layout.addView(input);
 
                                 new AlertDialog.Builder(MainActivity.this)
-                                    .setTitle("导入命令配置")
+                                    .setTitle(R.string.import_config_title)
                                     .setView(layout)
-                                    .setPositiveButton("导入", new DialogInterface.OnClickListener() {
+                                    .setPositiveButton(R.string.button_import, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             String text = input.getText().toString().trim();
                                             if (text.isEmpty()) {
-                                                Toast.makeText(MainActivity.this, "内容为空", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(MainActivity.this, getString(R.string.import_empty), Toast.LENGTH_SHORT).show();
                                                 return;
                                             }
 
@@ -359,12 +359,10 @@ public class MainActivity extends Activity {
 
                                             // 导入后自动刷新列表，无需重启
                                             initlist();
-                                            Toast.makeText(MainActivity.this,
-                                                "成功导入 " + count + " 条命令",
-                                                Toast.LENGTH_LONG).show();
+                                            Toast.makeText(MainActivity.this, getString(R.string.import_success, count), Toast.LENGTH_LONG).show();
                                         }
                                     })
-                                    .setNegativeButton("取消", null)
+                                    .setNegativeButton(R.string.button_cancel, null)
                                     .show();
                             }
                         });
@@ -393,13 +391,40 @@ public class MainActivity extends Activity {
                                 
                                 String result = sb.toString().trim();
                                 if (result.isEmpty()) {
-                                    Toast.makeText(MainActivity.this, "没有可导出的命令", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, getString(R.string.export_empty), Toast.LENGTH_SHORT).show();
                                     return;
                                 }
                                 
                                 ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE))
                                     .setPrimaryClip(ClipData.newPlainText("ShizukuConfig", result));
-                                Toast.makeText(MainActivity.this, "配置已复制到剪贴板", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, getString(R.string.export_success), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        // ========== 【新增】编辑环境变量按钮 ==========
+                        Button envBtn = v.findViewById(R.id.edit_env);
+                        envBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                final EditText input = new EditText(MainActivity.this);
+                                input.setHint(R.string.env_hint);
+                                input.setMinLines(8);
+                                input.setGravity(Gravity.TOP);
+                                input.setPadding(24, 24, 24, 24);
+                                input.setText(sp.getString("env_content", ""));
+                                
+                                new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle(R.string.edit_env_title)
+                                    .setView(input)
+                                    .setPositiveButton(R.string.button_save, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            sp.edit().putString("env_content", input.getText().toString()).apply();
+                                            Toast.makeText(MainActivity.this, getString(R.string.env_saved), Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.button_cancel, null)
+                                    .show();
                             }
                         });
 

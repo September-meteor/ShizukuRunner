@@ -32,4 +32,19 @@
     <string name="auto_wrap_experimental">自动换行（实验）</string>
     <string name="copied_output_to_clipboard">已复制到剪贴板</string>   <!-- 新名称 -->
     <string name="nothing_to_copy">没有可复制的内容</string>
+<string name="import_config">导入命令配置</string>
+<string name="export_config">导出当前配置</string>
+<string name="edit_env">编辑环境变量</string>
+<string name="import_config_title">导入命令配置</string>
+<string name="edit_env_title">编辑环境变量</string>
+<string name="import_hint">格式：编号、名称、命令各占一行\n用空行分隔不同条目\n\n示例：\n1\n电池容量\ndumpsys batterystats | grep capacity</string>
+<string name="env_hint">格式：KEY=VALUE，每行一个</string>
+<string name="import_empty">内容为空</string>
+<string name="import_success">成功导入 %d 条命令</string>
+<string name="export_empty">没有可导出的命令</string>
+<string name="export_success">配置已复制到剪贴板</string>
+<string name="env_saved">已保存，下次执行命令生效</string>
+<string name="button_save">保存</string>
+<string name="button_import">导入</string>
+<string name="button_cancel">取消</string>
 </resources>
