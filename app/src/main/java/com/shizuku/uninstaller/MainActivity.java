@@ -94,8 +94,12 @@ public class MainActivity extends Activity {
         instance = this;
         
         //根据系统深色模式自动切换软件的深色/亮色主题
-        if (((UiModeManager) getSystemService(Service.UI_MODE_SERVICE)).getNightMode() == UiModeManager.MODE_NIGHT_NO)
+        int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (currentNightMode == Configuration.UI_MODE_NIGHT_NO) {
             setTheme(android.R.style.Theme_DeviceDefault_Light_Dialog);
+        } else {
+            setTheme(android.R.style.Theme_DeviceDefault_Dialog);
+        }
         sp = getSharedPreferences("data", 0);
         //如果是初次开启，则展示help界面
         if (sp.getBoolean("first", true)) {
