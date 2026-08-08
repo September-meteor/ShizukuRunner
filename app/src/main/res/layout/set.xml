@@ -42,4 +42,18 @@
         android:text="@string/auto_wrap_experimental"
         android:padding="10dp"
         android:checked="true" />
+
+    <Button
+        android:id="@+id/import_config"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="导入命令配置"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/export_config"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="导出当前配置"
+        android:layout_marginTop="8dp" />
 </LinearLayout>

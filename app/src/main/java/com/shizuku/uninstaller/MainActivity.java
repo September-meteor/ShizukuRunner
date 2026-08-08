@@ -6,6 +6,8 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.app.UiModeManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,6 +41,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
+import android.widget.LinearLayout;
 
 import java.util.Locale;
 
@@ -269,6 +272,114 @@ public class MainActivity extends Activity {
                                 if (e1 != null && findViewById(R.id.l1).getVisibility() == View.VISIBLE) {
                                     applyInputModeToEditText(e1);
                                 }
+                            }
+                        });
+
+                        // ========== 【新增】导入配置按钮 ==========
+                        Button importBtn = v.findViewById(R.id.import_config);
+                        importBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // 用 LinearLayout 把说明和输入框分开，排版才正常
+                                LinearLayout layout = new LinearLayout(MainActivity.this);
+                                layout.setOrientation(LinearLayout.VERTICAL);
+                                layout.setPadding(32, 24, 32, 24);
+
+                                TextView hintText = new TextView(MainActivity.this);
+                                hintText.setText("每项占一行：编号、名称、命令\n用空行分隔不同条目，只写编号可清空\n\n示例：\n1\n电池容量\ndumpsys batterystats | grep capacity");
+                                hintText.setPadding(0, 0, 0, 16);
+                                layout.addView(hintText);
+
+                                final EditText input = new EditText(MainActivity.this);
+                                input.setMinLines(8);
+                                input.setGravity(Gravity.TOP);
+                                input.setPadding(24, 24, 24, 24);
+                                layout.addView(input);
+
+                                new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("导入命令配置")
+                                    .setView(layout)
+                                    .setPositiveButton("导入", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            String text = input.getText().toString().trim();
+                                            if (text.isEmpty()) {
+                                                Toast.makeText(MainActivity.this, "内容为空", Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }
+
+                                            int count = 0;
+                                            String[] blocks = text.split("\\n\\s*\\n");
+
+                                            for (String block : blocks) {
+                                                String trimmed = block.trim();
+                                                if (trimmed.isEmpty()) continue;
+                                                String[] lines = trimmed.split("\\r?\\n", 3);
+
+                                                try {
+                                                    int userNum = Integer.parseInt(lines[0].trim());
+                                                    int id = userNum - 1;
+
+                                                    // 🌟 关键修复：支持只写编号来清空
+                                                    // length==1: 只有编号 → 名称和内容都清空
+                                                    // length==2: 编号+名称 → 内容清空
+                                                    // length>=3: 正常读取
+                                                    String name = lines.length > 1 ? lines[1].trim() : "";
+                                                    String content = lines.length > 2 ? lines[2].trim() : "";
+
+                                                    getSharedPreferences(String.valueOf(id), 0)
+                                                        .edit()
+                                                        .putString("name", name)
+                                                        .putString("content", content)
+                                                        .apply();
+                                                    count++;
+                                                } catch (NumberFormatException e) {
+                                                    // 编号不是数字，跳过
+                                                }
+                                            }
+
+                                            initlist();
+                                            Toast.makeText(MainActivity.this,
+                                                "成功导入 " + count + " 条命令",
+                                                Toast.LENGTH_LONG).show();
+                                        }
+                                    })
+                                    .setNegativeButton("取消", null)
+                                    .show();
+                            }
+                        });
+
+                        // ========== 【新增】导出配置按钮 ==========
+                        Button exportBtn = v.findViewById(R.id.export_config);
+                        exportBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                StringBuilder sb = new StringBuilder();
+                                int[] allIds = sp.getBoolean("20", false) 
+                                    ? new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49}
+                                    : new int[]{0,1,2,3,4,5,6,7,8,9};
+                                
+                                for (int id : allIds) {
+                                    SharedPreferences p = getSharedPreferences(String.valueOf(id), 0);
+                                    String name = p.getString("name", "");
+                                    String content = p.getString("content", "");
+                                    if (!name.isEmpty() || !content.isEmpty()) {
+                                        // 🌟 导出时显示用户友好的编号（+1）
+                                        sb.append(id + 1).append("\n")
+                                          .append(name).append("\n")
+                                          .append(content).append("\n\n");
+                                    }
+                                }
+                                
+                                String result = sb.toString().trim();
+                                if (result.isEmpty()) {
+                                    Toast.makeText(MainActivity.this, "没有可导出的命令", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                                
+                                ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE))
+                                    .setPrimaryClip(ClipData.newPlainText("ShizukuConfig", result));
+                                Toast.makeText(MainActivity.this, "配置已复制到剪贴板", Toast.LENGTH_SHORT).show();
                             }
                         });
 
