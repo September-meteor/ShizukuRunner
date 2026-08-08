@@ -35,13 +35,13 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
-import android.widget.LinearLayout;
 
 import java.util.Locale;
 
@@ -166,25 +166,26 @@ public class MainActivity extends Activity {
         boolean multiLineMode = isMultiLineModeEnabled();
         
         if (multiLineMode) {
-            // 多行模式：允许换行，显示多行
+            // 1. 多行命令模式：多行编辑，回车换行，文本自动折行
             editText.setSingleLine(false);
             editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | 
                                   android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
             editText.setHorizontallyScrolling(false);
             editText.setMinLines(3);
             editText.setMaxLines(10);
+        } else if (autoWrap) {
+            // 2. 仅开启换行：单行命令行为（回车执行），但自动折行显示多行
+            editText.setSingleLine(false);
+            editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+            editText.setHorizontallyScrolling(false);
+            editText.setMinLines(1);
+            editText.setMaxLines(5);
         } else {
-            // 单行模式
+            // 3. 不开启换行：单行显示，水平滚动，回车执行
             editText.setSingleLine(true);
             editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
             editText.setMaxLines(1);
-            
-            // 自动换行设置（仅影响水平滚动）
-            if (autoWrap) {
-                editText.setHorizontallyScrolling(false);
-            } else {
-                editText.setHorizontallyScrolling(true);
-            }
+            editText.setHorizontallyScrolling(true);
         }
     }
 
@@ -250,18 +251,7 @@ public class MainActivity extends Activity {
                             }
                         });
 
-                        // 多行命令模式开关（替代原来的实验性功能）
-                        Switch multiLineSwitch = v.findViewById(R.id.multi_line_switch);
-                        multiLineSwitch.setChecked(sp.getBoolean("multi_line_mode", false));
-                        multiLineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                sp.edit().putBoolean("multi_line_mode", isChecked).apply();
-                                Toast.makeText(MainActivity.this, R.string.restart_toast, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        // 自动换行开关
+                        // 自动换行开关（必须先声明，多行模式开关的监听器里要用）
                         Switch autoWrapSwitch = v.findViewById(R.id.auto_wrap_switch);
                         autoWrapSwitch.setChecked(sp.getBoolean("auto_wrap", true));
                         autoWrapSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -275,12 +265,41 @@ public class MainActivity extends Activity {
                             }
                         });
 
+                        // 多行命令模式开关（替代原来的实验性功能）
+                        Switch multiLineSwitch = v.findViewById(R.id.multi_line_switch);
+                        multiLineSwitch.setChecked(sp.getBoolean("multi_line_mode", false));
+                        multiLineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                sp.edit().putBoolean("multi_line_mode", isChecked).apply();
+                                
+                                // 开启多行模式时强制开启自动换行，并禁用自动换行开关
+                                if (isChecked) {
+                                    sp.edit().putBoolean("auto_wrap", true).apply();
+                                    autoWrapSwitch.setChecked(true);
+                                    autoWrapSwitch.setEnabled(false);
+                                } else {
+                                    // 关闭多行模式时恢复自动换行开关可用
+                                    autoWrapSwitch.setEnabled(true);
+                                }
+                                
+                                // 如果当前在命令输入模式，立即应用更改
+                                if (e1 != null && findViewById(R.id.l1).getVisibility() == View.VISIBLE) {
+                                    applyInputModeToEditText(e1);
+                                }
+                            }
+                        });
+
+                        // 初始化时根据当前状态锁定自动换行开关
+                        if (sp.getBoolean("multi_line_mode", false)) {
+                            autoWrapSwitch.setEnabled(false);
+                        }
+
                         // ========== 【新增】导入配置按钮 ==========
                         Button importBtn = v.findViewById(R.id.import_config);
                         importBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                // 用 LinearLayout 把说明和输入框分开，排版才正常
                                 LinearLayout layout = new LinearLayout(MainActivity.this);
                                 layout.setOrientation(LinearLayout.VERTICAL);
                                 layout.setPadding(32, 24, 32, 24);
@@ -309,21 +328,21 @@ public class MainActivity extends Activity {
                                             }
 
                                             int count = 0;
+                                            // 按一个或多个空行分割成块
                                             String[] blocks = text.split("\\n\\s*\\n");
 
                                             for (String block : blocks) {
                                                 String trimmed = block.trim();
                                                 if (trimmed.isEmpty()) continue;
+                                                // 限制最多分3段，第3段保留命令内部所有换行
                                                 String[] lines = trimmed.split("\\r?\\n", 3);
 
                                                 try {
+                                                    // 用户从1开始编号，内部转0-based
                                                     int userNum = Integer.parseInt(lines[0].trim());
                                                     int id = userNum - 1;
 
-                                                    // 🌟 关键修复：支持只写编号来清空
-                                                    // length==1: 只有编号 → 名称和内容都清空
-                                                    // length==2: 编号+名称 → 内容清空
-                                                    // length>=3: 正常读取
+                                                    // 支持只写编号来清空；支持名称留空；支持多行命令
                                                     String name = lines.length > 1 ? lines[1].trim() : "";
                                                     String content = lines.length > 2 ? lines[2].trim() : "";
 
@@ -334,10 +353,11 @@ public class MainActivity extends Activity {
                                                         .apply();
                                                     count++;
                                                 } catch (NumberFormatException e) {
-                                                    // 编号不是数字，跳过
+                                                    // 编号不是数字，跳过该块
                                                 }
                                             }
 
+                                            // 导入后自动刷新列表，无需重启
                                             initlist();
                                             Toast.makeText(MainActivity.this,
                                                 "成功导入 " + count + " 条命令",
@@ -364,7 +384,7 @@ public class MainActivity extends Activity {
                                     String name = p.getString("name", "");
                                     String content = p.getString("content", "");
                                     if (!name.isEmpty() || !content.isEmpty()) {
-                                        // 🌟 导出时显示用户友好的编号（+1）
+                                        // 导出时编号按用户习惯显示（1-based）
                                         sb.append(id + 1).append("\n")
                                           .append(name).append("\n")
                                           .append(content).append("\n\n");
