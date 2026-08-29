@@ -304,14 +304,10 @@ public class MainActivity extends Activity {
                                 layout.setOrientation(LinearLayout.VERTICAL);
                                 layout.setPadding(32, 24, 32, 24);
 
-                                TextView hintText = new TextView(MainActivity.this);
-                                hintText.setText(R.string.import_hint);
-                                hintText.setPadding(0, 0, 0, 16);
-                                layout.addView(hintText);
-
                                 final EditText input = new EditText(MainActivity.this);
                                 input.setMinLines(8);
                                 input.setGravity(Gravity.TOP);
+                                input.setHint(R.string.import_hint);
                                 input.setPadding(24, 24, 24, 24);
                                 layout.addView(input);
 

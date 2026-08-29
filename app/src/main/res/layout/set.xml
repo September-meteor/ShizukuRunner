@@ -43,24 +43,44 @@
         android:padding="10dp"
         android:checked="true" />
 
-    <Button
-        android:id="@+id/import_config"
-        android:layout_width="match_parent"
+    <!-- 配置管理区：离上方开关近一点，离页面底部远一点 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/import_config"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/import_config"
+            style="@style/btn_outline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:drawableStart="@drawable/ic_import"
+            android:drawablePadding="2dp"
+            android:maxLines="1"
+            android:text="@string/import_config" />
+
+        <Button
+            android:id="@+id/edit_env"
+            style="@style/btn_outline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_env"
+            android:drawablePadding="2dp"
+            android:maxLines="1"
+            android:text="@string/edit_env" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/export_config"
-        android:layout_width="match_parent"
+        style="@style/btn_outline"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/export_config"
-        android:layout_marginTop="8dp" />
-
-    <Button
-        android:id="@+id/edit_env"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/edit_env"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="24dp"
+        android:drawableStart="@drawable/ic_export"
+        android:drawablePadding="2dp"
+        android:maxLines="1"
+        android:text="@string/export_config" />
 </LinearLayout>
