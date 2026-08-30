@@ -2,6 +2,24 @@ plugins {
     id 'com.android.application'
 }
 
+// 从最近的 git tag 自动取版本号（tag v2.1 → versionName "2.1"）
+def getVersionNameFromGit() {
+    def stdout = new ByteArrayOutputStream()
+    try {
+        exec {
+            commandLine 'git', 'describe', '--tags', '--abbrev=0'
+            standardOutput = stdout
+        }
+    } catch (Exception e) {
+        // 拿不到版本号就明确报错
+        throw new GradleException(
+            "无法从 git tag 获取版本号：请确认当前在 git 仓库中（存在 .git 和 v* 标签）。" +
+            "可在终端运行 git describe --tags --abbrev=0 排查。", e)
+    }
+    def version = stdout.toString().trim()
+    return version.startsWith('v') ? version.substring(1) : version
+}
+
 android {
     // 不要signingConfigs，用默认debug签名
     
@@ -13,7 +31,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 32
         versionCode 13  // 保持A原版版本号
-        versionName "13"
+        versionName getVersionNameFromGit()
         
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         
